@@ -240,22 +240,4 @@ class KNearestNeighbor:
             # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
         return y_pred
-
-"""
-Xtest = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
-Xtrain = np.array([[2, 2, 2], [-2, -2, -2], [4, 4, 4], [-4, -4, -4], [8, 8, 8], [-8, -8, -8]])
-Ytrain = np.array([[2], [4], [6], [8], [10], [12]])
-
-from sklearn import datasets
-dataset = datasets.load_digits()
-test_border = 100
-X_train, y_train = dataset.data[test_border:], dataset.target[test_border:]
-X_test, y_test = dataset.data[:test_border], dataset.target[:test_border]
-
-num_test = X_test.shape[0]
-
-knn = KNearestNeighbor()
-knn.fit(X_train, y_train)
-#print(knn.compute_distances_no_loops(Xtest))
-print(knn.predict(X_test))
-"""
+    
