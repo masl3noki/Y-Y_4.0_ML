@@ -206,11 +206,13 @@ class KNearestNeighbor:
 
             # Возьмем для каждого тестового значения (строки) k "ближайших соседей",
             # т.е. k первых элементов в (уже) отсортированной строке:
-            closest_idxs = sorted_idxs[:, :k] # shape = (num_test, k)
+            cols = range(0, k) # т.е. k колонок
+            closest_idxs = sorted_idxs[:, cols]
 
             # Берем индексы найденных "соседей" из y_train:
-            labels_idxs = closest_idxs.flatten() # Наша цель - взять с повторением и уже потом отсеять
-            closest_y = self.y_train[labels_idxs].flatten()
+            closest_y = np.zeros(closest_idxs.shape) # создаем массив shape = (100,3)
+            for i in range((closest_idxs.shape)[0]):
+                closest_y[i] = self.y_train[closest_idxs[i]]
 
             # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
             #########################################################################
@@ -225,18 +227,35 @@ class KNearestNeighbor:
             # Теперь выбираем самый "часто встречающийся" лейбл (целевой параметр).
             # Т.к. у нас лейблы от 0 до 9, то можно вообще любой поиск max значения взять.
 
-            # binmax: Count number of occurrences of each value in array of non-negative ints.
-            # Далее было взято максимальное number of occurences. Лучше чекнуть документацию
-            y_pred = np.argmax(np.bincount(closest_y))
+            # Однако, bincount не работает на dtype('float64'), коими являются значения
+            # вектора y_train и, следовательно, closest_y. Поэтому переводим в int.
+
+            y_pred = np.zeros((closest_idxs.shape)[0], dtype=int) # создаем массив shape = (100,)
+            for i in range((closest_idxs.shape)[0]): # Пишу наглядно, по сути работаем с каждой строкой
+                # лучше чекнуть документацию по bincount. Вся конструкция внутри for 
+                # берет самый часто встречающийся лейбл в векторе
+                temp = np.bincount(closest_y[i].astype(int))
+                y_pred[i] = np.argmax(temp)
 
             # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
         return y_pred
 
+"""
 Xtest = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
 Xtrain = np.array([[2, 2, 2], [-2, -2, -2], [4, 4, 4], [-4, -4, -4], [8, 8, 8], [-8, -8, -8]])
 Ytrain = np.array([[2], [4], [6], [8], [10], [12]])
 
-knn = KNearestNeighbor();
-knn.fit(Xtrain, Ytrain)
-print(knn.predict(Xtest))
+from sklearn import datasets
+dataset = datasets.load_digits()
+test_border = 100
+X_train, y_train = dataset.data[test_border:], dataset.target[test_border:]
+X_test, y_test = dataset.data[:test_border], dataset.target[:test_border]
+
+num_test = X_test.shape[0]
+
+knn = KNearestNeighbor()
+knn.fit(X_train, y_train)
+#print(knn.compute_distances_no_loops(Xtest))
+print(knn.predict(X_test))
+"""
