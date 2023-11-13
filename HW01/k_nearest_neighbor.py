@@ -199,7 +199,19 @@ class KNearestNeighbor:
             # Hint: Look up the function numpy.argsort.                             #
             #########################################################################
             # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-            pass
+
+            # Сначала отсортируем матрицу расстояний dists построчно и получим массив
+            # отсортированных по возрастанию элементов, записанных через индексы:
+            sorted_idxs = np.argsort(dists, axis=1)
+
+            # Возьмем для каждого тестового значения (строки) k "ближайших соседей",
+            # т.е. k первых элементов в (уже) отсортированной строке:
+            closest_idxs = sorted_idxs[:, :k] # shape = (num_test, k)
+
+            # Берем индексы найденных "соседей" из y_train:
+            labels_idxs = closest_idxs.flatten() # Наша цель - взять с повторением и уже потом отсеять
+            closest_y = self.y_train[labels_idxs].flatten()
+
             # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
             #########################################################################
             # TODO:                                                                 #
@@ -210,6 +222,12 @@ class KNearestNeighbor:
             #########################################################################
             # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
+            # Теперь выбираем самый "часто встречающийся" лейбл (целевой параметр).
+            # Т.к. у нас лейблы от 0 до 9, то можно вообще любой поиск max значения взять.
+
+            # binmax: Count number of occurrences of each value in array of non-negative ints.
+            # Далее было взято максимальное number of occurences. Лучше чекнуть документацию
+            y_pred = np.argmax(np.bincount(closest_y))
 
             # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
@@ -217,11 +235,8 @@ class KNearestNeighbor:
 
 Xtest = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
 Xtrain = np.array([[2, 2, 2], [-2, -2, -2], [4, 4, 4], [-4, -4, -4], [8, 8, 8], [-8, -8, -8]])
+Ytrain = np.array([[2], [4], [6], [8], [10], [12]])
 
 knn = KNearestNeighbor();
-knn.fit(Xtrain, np.arange(3))
-
-
-print(knn.compute_distances_two_loops(Xtest))
-print(knn.compute_distances_one_loop(Xtest))
-print(knn.compute_distances_no_loops(Xtest))
+knn.fit(Xtrain, Ytrain)
+print(knn.predict(Xtest))
