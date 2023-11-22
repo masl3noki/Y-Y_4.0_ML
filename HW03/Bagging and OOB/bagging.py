@@ -47,9 +47,10 @@ class SimplifiedBaggingRegressor:
         Get average prediction for every object from passed dataset
         '''
         # Your code here
-        preds = np.zeros(len(data))
-        for model in self.models_list:
+        preds = np.zeros(len(data))  # Создаем контейнер под предсказания
+        for model in self.models_list:  # Каждая модель предсказывает данные
             preds += model.predict(data)
+        # Усредняем по моделям (т.е. по бутстрапированным выборкам)
         return preds / self.num_bags
 
     
@@ -60,15 +61,18 @@ class SimplifiedBaggingRegressor:
         '''
         list_of_predictions_lists = [[] for _ in range(len(self.data))]
         # Your Code Here
-
+        # Прогон по всем объектам датасета
         for idx in range(len(self.data)):
-            sample = self.data[idx].reshape(1, -1)
+            sample = self.data[idx].reshape(1, -1)  # см. документацию: "-1" это любое число. Иначе говоря - нам нужен вектор
             models_predictions = []
 
+            # Прогон по всем моделям
             for bag in range(self.num_bags):
+                # выполнение условия /*which have not seen this object during training phase*/
                 if idx not in self.indices_list[bag]:
                     models_predictions.append(float(self.models_list[bag].predict(sample)))
 
+            # Напомню - /*where list i contains predictions for self.data[i] object from all models*/
             list_of_predictions_lists[idx] = models_predictions
 
         self.list_of_predictions_lists = np.array(list_of_predictions_lists, dtype=object)
@@ -80,11 +84,15 @@ class SimplifiedBaggingRegressor:
         '''
         self._get_oob_predictions_from_every_model()
         # Your Code Here
+
+        # Инициализация контейнера под out of back предсказания
         self.oob_predictions = np.zeros(len(self.data))
 
+        # Прогон по всем объектам датасета
         for idx in range(len(self.data)):
             models_predictions = self.list_of_predictions_lists[idx]
 
+            # Реализация условия /*If object has been used in all bags on training phase, return None instead of prediction*/
             if len(models_predictions) == 0:
                 self.oob_predictions[idx] = None
             else:
@@ -97,4 +105,5 @@ class SimplifiedBaggingRegressor:
         '''
         self._get_averaged_oob_predictions()
         
+        # mean без учета nan'ов
         return np.nanmean((self.target - self.oob_predictions) ** 2) # Your Code Here
